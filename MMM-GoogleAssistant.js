@@ -223,6 +223,9 @@ Module.register("MMM-GoogleAssistant", {
       case "ASSISTANT_STOP":
         this.sendSocketNotification("ASSISTANT_BUSY")
         break
+      case "USER_FOUND":
+        this.sendSocketNotification('USER_FOUND', payload)
+        break;
     }
   },
 
