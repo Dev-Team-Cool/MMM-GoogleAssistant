@@ -76,13 +76,16 @@ class ASSISTANT {
   start (conversation) {
     this.assistant = new GoogleAssistant(this.assistantConfig.auth)
     this.assistant
-    .on('ready', () => {
-      this.assistant.start(this.assistantConfig.conversationConfig)
-    })
-    .on('started', conversation)
-    .on('error', (error) => {
-      conversation.end()
-    })
+      .on('ready', () => {
+        this.assistant.start(this.assistantConfig.conversationConfig)
+      })
+      .on('started', conversation)
+      .on('error', (error) => {
+        conversation.end()
+      })
+    // Fork Google Assistant and fix this
+    this.assistant.setup()
+
   }
 
   initConversation (originalPayload, conversation, endCallback=(response)=>{}) {
