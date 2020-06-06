@@ -55,6 +55,10 @@ class ASSISTANT {
     this.mic = null
   }
 
+  setOAuthClient (client) {
+    this.assistantConfig.auth.oauth2Client = client;
+  }
+
   activate (payload, callback=()=>{}) {
     var converse = null
     var type = payload.type
