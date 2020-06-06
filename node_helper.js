@@ -9,6 +9,7 @@ const Assistant = require("./components/assistant.js")
 const ScreenParser = require("./components/screenParser.js")
 const ActionManager = require("./components/actionManager.js")
 const Snowboy = require("@bugsounet/snowboy").Snowboy
+const OAuth2 = new (require('google-auth-library'))().OAuth2;
 
 var _log = function() {
   var context = "[ASSISTANT]"
@@ -18,6 +19,9 @@ var _log = function() {
 var log = function() {
   //do nothing
 }
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 var NodeHelper = require("node_helper")
 
@@ -37,8 +41,14 @@ module.exports = NodeHelper.create({
       case "ASSISTANT_BUSY":
         this.snowboy.stop()
         break
-      case "ASSISTANT_READY":
-        this.snowboy.start()
+      // case "ASSISTANT_READY":
+      //   this.snowboy.start()
+      //   break
+      case "USER_LEFT":
+        this.snowboy.stop()
+        break
+      case "USER_FOUND", "ASSISTANT_READY":
+        this.startListening(payload)
         break
       case "SHELLEXEC":
         var command = payload.command
@@ -63,15 +73,36 @@ module.exports = NodeHelper.create({
     this.sendSocketNotification("TUNNEL", payload)
   },
 
+  startListening: function(user) {
+    // Create an assistant with the current user credentials
+    console.log('trigger')
+    
+
+    // Start listening for the hotword
+    this.snowboy.start()
+  },
+
   activateAssistant: function(payload) {
-    log("QUERY:", payload)
-    var assistantConfig = Object.assign({}, this.config.assistantConfig)
+    console.log("QUERY:", payload)
+
+    const assistantConfig = Object.assign({}, this.config.assistantConfig)
     assistantConfig.debug = this.config.debug
     assistantConfig.lang = payload.lang
     assistantConfig.useScreenOutput = payload.useScreenOutput
     assistantConfig.useAudioOutput = payload.useAudioOutput
     assistantConfig.micConfig = this.config.micConfig
     this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
+    const oAuthClient = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://localhost:44323/signin-google');
+    oAuthClient.setCredentials()// User Tokens
+    this.assistant.setOAuthClient(oAuthClient)
+    
+    // const assistantConfig = Object.assign({}, this.config.assistantConfig)
+    // assistantConfig.debug = this.config.debug
+    // assistantConfig.lang = payload.lang
+    // assistantConfig.useScreenOutput = payload.useScreenOutput
+    // assistantConfig.useAudioOutput = payload.useAudioOutput
+    // assistantConfig.micConfig = this.config.micConfig
+    // this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
 
     var parserConfig = {
       screenOutputCSS: this.config.responseConfig.screenOutputCSS,
