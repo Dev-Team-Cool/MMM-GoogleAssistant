@@ -63,3 +63,4 @@ const assistant = new GoogleAssistant(config.auth);
     .on('error', (error) => {
       console.log('Assistant Error:', error);
     });
+assistant.setup();
