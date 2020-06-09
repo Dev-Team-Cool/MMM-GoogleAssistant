@@ -8,3 +8,6 @@
 /profiles/default.json
 /tmp/response.mp3
 /token.json
+
+# local symlink
+google-assistant
