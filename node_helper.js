@@ -47,7 +47,7 @@ module.exports = NodeHelper.create({
       case "USER_LEFT":
         this.snowboy.stop()
         break
-      case "USER_FOUND", "ASSISTANT_READY":
+      case "USER_FOUND":
         this.startListening(payload)
         break
       case "SHELLEXEC":
@@ -92,7 +92,7 @@ module.exports = NodeHelper.create({
   },
 
   activateAssistant: function(payload) {
-    console.log("QUERY:", payload)
+    log("QUERY:", payload)
 
     var parserConfig = {
       screenOutputCSS: this.config.responseConfig.screenOutputCSS,
