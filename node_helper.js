@@ -75,7 +75,6 @@ module.exports = NodeHelper.create({
 
   startListening: function(user) {
     // Create an assistant with the current user credentials
-    console.log('trigger')
     const assistantConfig = Object.assign({}, this.config.assistantConfig)
     assistantConfig.debug = this.config.debug
     assistantConfig.lang = "en-US"
