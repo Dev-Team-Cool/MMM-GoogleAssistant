@@ -83,7 +83,7 @@ class ASSISTANT {
       .on('error', (error) => {
         conversation.end()
       })
-    // Fork Google Assistant and fix this
+
     this.assistant.setup()
 
   }
