@@ -76,7 +76,17 @@ module.exports = NodeHelper.create({
   startListening: function(user) {
     // Create an assistant with the current user credentials
     console.log('trigger')
-    
+    const assistantConfig = Object.assign({}, this.config.assistantConfig)
+    assistantConfig.debug = this.config.debug
+    assistantConfig.lang = "en-US"
+    assistantConfig.useScreenOutput = true
+    assistantConfig.useAudioOutput = true
+    assistantConfig.micConfig = this.config.micConfig
+    this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
+    // TODO: Move these to the config files
+    const oAuthClient = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://localhost:44323/signin-google');
+    oAuthClient.setCredentials(user.tokens) // User Tokens
+    this.assistant.setOAuthClient(oAuthClient) // Set the OAuthClient
 
     // Start listening for the hotword
     this.snowboy.start()
@@ -84,25 +94,6 @@ module.exports = NodeHelper.create({
 
   activateAssistant: function(payload) {
     console.log("QUERY:", payload)
-
-    const assistantConfig = Object.assign({}, this.config.assistantConfig)
-    assistantConfig.debug = this.config.debug
-    assistantConfig.lang = payload.lang
-    assistantConfig.useScreenOutput = payload.useScreenOutput
-    assistantConfig.useAudioOutput = payload.useAudioOutput
-    assistantConfig.micConfig = this.config.micConfig
-    this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
-    const oAuthClient = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://localhost:44323/signin-google');
-    oAuthClient.setCredentials()// User Tokens
-    this.assistant.setOAuthClient(oAuthClient)
-    
-    // const assistantConfig = Object.assign({}, this.config.assistantConfig)
-    // assistantConfig.debug = this.config.debug
-    // assistantConfig.lang = payload.lang
-    // assistantConfig.useScreenOutput = payload.useScreenOutput
-    // assistantConfig.useAudioOutput = payload.useAudioOutput
-    // assistantConfig.micConfig = this.config.micConfig
-    // this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
 
     var parserConfig = {
       screenOutputCSS: this.config.responseConfig.screenOutputCSS,
@@ -140,9 +131,6 @@ module.exports = NodeHelper.create({
     if (this.config.debug) log = _log
     if (!fs.existsSync(this.config.assistantConfig["modulePath"] + "/" + this.config.assistantConfig.credentialPath)) {
       error = "[ERROR] credentials.json file not found !"
-    }
-    else if (!fs.existsSync(this.config.assistantConfig["modulePath"] + "/" + this.config.assistantConfig.tokenPath)) {
-      error = "[ERROR] token.json file not found !"
     }
     if (error) {
       console.log("[ASSISTANT]" + error)
