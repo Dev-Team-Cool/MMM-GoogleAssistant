@@ -9,6 +9,7 @@ const Assistant = require("./components/assistant.js")
 const ScreenParser = require("./components/screenParser.js")
 const ActionManager = require("./components/actionManager.js")
 const Snowboy = require("@bugsounet/snowboy").Snowboy
+const OAuth2 = new (require('google-auth-library'))().OAuth2;
 
 var _log = function() {
   var context = "[ASSISTANT]"
@@ -18,6 +19,9 @@ var _log = function() {
 var log = function() {
   //do nothing
 }
+
+const CLIENT_ID = process.env.CLIENT_ID;
+const CLIENT_SECRET = process.env.CLIENT_SECRET;
 
 var NodeHelper = require("node_helper")
 
@@ -37,8 +41,14 @@ module.exports = NodeHelper.create({
       case "ASSISTANT_BUSY":
         this.snowboy.stop()
         break
-      case "ASSISTANT_READY":
-        this.snowboy.start()
+      // case "ASSISTANT_READY":
+      //   this.snowboy.start()
+      //   break
+      case "USER_LEFT":
+        this.snowboy.stop()
+        break
+      case "USER_FOUND":
+        this.startListening(payload)
         break
       case "SHELLEXEC":
         var command = payload.command
@@ -63,15 +73,26 @@ module.exports = NodeHelper.create({
     this.sendSocketNotification("TUNNEL", payload)
   },
 
-  activateAssistant: function(payload) {
-    log("QUERY:", payload)
-    var assistantConfig = Object.assign({}, this.config.assistantConfig)
+  startListening: function(user) {
+    // Create an assistant with the current user credentials
+    const assistantConfig = Object.assign({}, this.config.assistantConfig)
     assistantConfig.debug = this.config.debug
-    assistantConfig.lang = payload.lang
-    assistantConfig.useScreenOutput = payload.useScreenOutput
-    assistantConfig.useAudioOutput = payload.useAudioOutput
+    assistantConfig.lang = "en-US"
+    assistantConfig.useScreenOutput = true
+    assistantConfig.useAudioOutput = true
     assistantConfig.micConfig = this.config.micConfig
     this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
+    // TODO: Move these to the config files
+    const oAuthClient = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://localhost:44323/signin-google');
+    oAuthClient.setCredentials(user.tokens) // User Tokens
+    this.assistant.setOAuthClient(oAuthClient) // Set the OAuthClient
+
+    // Start listening for the hotword
+    this.snowboy.start()
+  },
+
+  activateAssistant: function(payload) {
+    log("QUERY:", payload)
 
     var parserConfig = {
       screenOutputCSS: this.config.responseConfig.screenOutputCSS,
@@ -109,9 +130,6 @@ module.exports = NodeHelper.create({
     if (this.config.debug) log = _log
     if (!fs.existsSync(this.config.assistantConfig["modulePath"] + "/" + this.config.assistantConfig.credentialPath)) {
       error = "[ERROR] credentials.json file not found !"
-    }
-    else if (!fs.existsSync(this.config.assistantConfig["modulePath"] + "/" + this.config.assistantConfig.tokenPath)) {
-      error = "[ERROR] token.json file not found !"
     }
     if (error) {
       console.log("[ASSISTANT]" + error)

@@ -55,6 +55,10 @@ class ASSISTANT {
     this.mic = null
   }
 
+  setOAuthClient (client) {
+    this.assistantConfig.auth.oauth2Client = client;
+  }
+
   activate (payload, callback=()=>{}) {
     var converse = null
     var type = payload.type
@@ -72,13 +76,16 @@ class ASSISTANT {
   start (conversation) {
     this.assistant = new GoogleAssistant(this.assistantConfig.auth)
     this.assistant
-    .on('ready', () => {
-      this.assistant.start(this.assistantConfig.conversationConfig)
-    })
-    .on('started', conversation)
-    .on('error', (error) => {
-      conversation.end()
-    })
+      .on('ready', () => {
+        this.assistant.start(this.assistantConfig.conversationConfig)
+      })
+      .on('started', conversation)
+      .on('error', (error) => {
+        conversation.end()
+      })
+
+    this.assistant.setup()
+
   }
 
   initConversation (originalPayload, conversation, endCallback=(response)=>{}) {

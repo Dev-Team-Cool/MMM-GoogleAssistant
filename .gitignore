@@ -4,6 +4,10 @@
 /package-lock.json
 /snowboy
 /tmp/lastResponse.mp3
+/tmp/lastScreenOutput.html
 /profiles/default.json
 /tmp/response.mp3
 /token.json
+
+# local symlink
+google-assistant
