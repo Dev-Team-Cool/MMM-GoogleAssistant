@@ -84,7 +84,7 @@ module.exports = NodeHelper.create({
     this.assistant = new Assistant(assistantConfig, (obj)=>{this.tunnel(obj)})
     // TODO: Move these to the config files
     const oAuthClient = new OAuth2(CLIENT_ID, CLIENT_SECRET, 'https://localhost:44323/signin-google');
-    oAuthClient.setCredentials(user.tokens) // User Tokens
+    oAuthClient.setCredentials({ access_token: user.tokens.token }) // User Tokens
     this.assistant.setOAuthClient(oAuthClient) // Set the OAuthClient
 
     // Start listening for the hotword
