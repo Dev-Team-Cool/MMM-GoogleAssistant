@@ -41,11 +41,8 @@ module.exports = NodeHelper.create({
       case "ASSISTANT_BUSY":
         this.snowboy.stop()
         break
-      // case "ASSISTANT_READY":
-      //   this.snowboy.start()
-      //   break
       case "USER_LEFT":
-        this.snowboy.stop()
+        this.stopListening()
         break
       case "USER_FOUND":
         this.startListening(payload)
@@ -74,6 +71,8 @@ module.exports = NodeHelper.create({
   },
 
   startListening: function(user) {
+    if (!user.settings.assistant) return; // User did not opt-in for assistant usage
+
     // Create an assistant with the current user credentials
     const assistantConfig = Object.assign({}, this.config.assistantConfig)
     assistantConfig.debug = this.config.debug
@@ -89,6 +88,11 @@ module.exports = NodeHelper.create({
 
     // Start listening for the hotword
     this.snowboy.start()
+  },
+
+  stopListening: function() {
+    this.snowboy.stop();
+    this.assistant = null;
   },
 
   activateAssistant: function(payload) {
