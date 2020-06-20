@@ -190,7 +190,7 @@ module.exports = NodeHelper.create({
 
   /** Snowboy Callback **/
   hotwordDetect: function(detected) {
-    if (detected) this.sendSocketNotification("ASSISTANT_ACTIVATE", { type:"MIC" })
+    if (detected && this.assistant) this.sendSocketNotification("ASSISTANT_ACTIVATE", { type:"MIC" })
   },
 })
 
